@@ -1,0 +1,49 @@
+{
+  "name": "quinnjr/phinch",
+  "description": "An easily-extensible Phalcon PHP micro application framework",
+  "version": "0.1.0-alpha0",
+  "type": "library",
+  "keywords": [
+    "phalcon",
+    "api",
+    "rest",
+    "extension",
+    "psr7",
+    "psr15",
+    "psr17"
+  ],
+  "homepage": "https://github.com/quinnjr/phinch",
+  "license": "ISC",
+  "authors": [
+    {
+      "name": "Joseph R. Quinn",
+      "email": "423821+quinnjr@users.noreply.github.com",
+      "homepage": "https://github.com/quinnjr",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/quinnjr/phinch/issues"
+  },
+  "require": {
+    "ext-phalcon": "^4.0",
+    "ext-psr": "^1.0",
+    "php-ds/php-ds": "^1.2",
+    "php": "^7.3"
+  },
+  "require-dev": {
+
+  },
+  "suggest": {
+    "ext-ds": "Speed up use of php-ds with the native extension"
+  },
+  "autoload": {
+    "psr-4": {
+      "Phinch\\": "src/"
+    }
+  },
+  "minimum-stability": "dev",
+  "scripts": {
+    "test": "./tools/phpunit --testsuite phinch"
+  }
+}
