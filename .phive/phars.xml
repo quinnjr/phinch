@@ -2,5 +2,4 @@
 <phive xmlns="https://phar.io/phive">
   <phar name="phpunit" version="^9.2.5" installed="9.2.5" location="./tools/phpunit" copy="false"/>
   <phar name="phpdocumentor" version="^3.0.0-rc" installed="3.0.0-rc" location="./tools/phpdocumentor" copy="false"/>
-  <phar name="phpcs" version="^3.5" installed="3.5.5" location="./tools/phpcs" copy="false"/>
 </phive>

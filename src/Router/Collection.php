@@ -5,11 +5,10 @@
 
 namespace Phinch\Router;
 
-use function \array_push;
+use function \is_null;
 
 use \Ds\Map;
 use \Ds\Stack;
-use \Phalcon\Mvc\Micro\CollectionInterface;
 
 use Phinch\Exception;
 use Phinch\Middleware\AbstractMiddleware;
@@ -30,7 +29,7 @@ use Phinch\Middleware\AbstractMiddleware;
  * $collection->get("/hello-world", new MyMiddleware(), 'helloWorlAction');
  * ```
  */
-class Collection implements CollectionInterface
+class Collection
 {
   /** @var bool */
   protected $isLazy;
@@ -50,7 +49,7 @@ class Collection implements CollectionInterface
   /**
    * Class constructor
    */
-  public function __constructor()
+  public function __construct()
   {
     $this->handlers = new Map();
     $this->middlewares = new Stack();
@@ -60,12 +59,13 @@ class Collection implements CollectionInterface
   /**
    * Add a middleware to the Middleware stack.
    *
-   * @param AbstractMiddleware $middleware
+   * @param callable $middleware
    * @return self
    */
-  public function addMiddleware(AbstractMiddleware $middleware): self
+  public function addMiddleware(callable $middleware): self
   {
-    // array_push($this->middlewares, $middleware);
+    $this->middlewares->push($middleware);
+    return $this;
   }
 
   /**
@@ -82,9 +82,9 @@ class Collection implements CollectionInterface
    * @param callable|string $handlers
    * @return self
    */
-  public function delete(string $routePattern, mixed ...$handlers): self
+  public function delete(string $routePattern, ...$handlers): self
   {
-    $this->addMap("DELETE", routePattern, $handlers);
+    $this->addMap('DELETE', $routePattern, $handlers);
     return $this;
   }
 
@@ -102,7 +102,7 @@ class Collection implements CollectionInterface
    * @param callable|string $handlers
    * @return self
    */
-  public function get(string $routePattern, mixed ...$handlers): self
+  public function get(string $routePattern, ...$handlers): self
   {
     $this->addMap("GET", $routePattern, $handlers);
     return $this;
@@ -113,17 +113,17 @@ class Collection implements CollectionInterface
    *
    * @return mixed
    */
-  public function getHandler(): mixed
+  public function getHandler()
   {
     return $this->handler;
   }
 
   /**
-   * Returns the array of handlers on the collection.
+   * Returns the map of handlers on the collection.
    *
-   * @return array
+   * @return Map
    */
-  public function getHandlers(): array
+  public function getHandlers(): Map
   {
     return $this->handlers;
   }
@@ -139,12 +139,22 @@ class Collection implements CollectionInterface
   }
 
   /**
-   * Undocumented function
+   * Maps a route to a handler that only matches if the HTTP method is HEAD.
    *
+   * Maps a route to a handler that only matches if the Http method is HEAD.
+   * All handlers added to the $handlers variadic parameter are considered
+   * middlewares to be executed during the route handle cycle, with a final
+   * string being assumed to be the Controller method to invoke as the route
+   * handler proper. If only middlewares or closures are provided, the
+   * middlewares and closures compose the route.
+   *
+   * @param string $routePattern
+   * @param callable|string $handlers
    * @return self
    */
-  public function head(): self
+  public function head(string $routePattern, ...$handlers): self
   {
+    $this->addMap("HEAD", $routePattern, $handlers);
     return $this;
   }
 
@@ -155,11 +165,26 @@ class Collection implements CollectionInterface
    */
   public function isLazy(): bool
   {
-    return $this->lazy;
+    return $this->isLazy;
   }
 
-  public function map(): self
+    /**
+   * Maps a route to a handler.
+   *
+   * Maps a route to a handler.
+   * All handlers added to the $handlers variadic parameter are considered
+   * middlewares to be executed during the route handle cycle, with a final
+   * string being assumed to be the Controller method to invoke as the route
+   * handler proper. If only middlewares or closures are provided, the
+   * middlewares and closures compose the route.
+   *
+   * @param string $routePattern
+   * @param callable|string $handlers
+   * @return self
+   */
+  public function map(string $routePattern, ...$handlers): self
   {
+    $this->addMap(null, $routePattern, $handlers);
     return $this;
   }
 
@@ -179,43 +204,107 @@ class Collection implements CollectionInterface
   public function mapVia(
     string $routePattern,
     array $methods,
-    mixed ...$handlers
+    ...$handlers
   ): self
   {
+    foreach ($methods as $method) {
+      $this->addMap($method, $routePattern, $handlers);
+    }
+
     return $this;
   }
 
-  public function options()
+    /**
+   * Maps a route to a handler that only matches if the HTTP method is OPTIONS.
+   *
+   * Maps a route to a handler that only matches if the Http method is OPTIONS.
+   * All handlers added to the $handlers variadic parameter are considered
+   * middlewares to be executed during the route handle cycle, with a final
+   * string being assumed to be the Controller method to invoke as the route
+   * handler proper. If only middlewares or closures are provided, the
+   * middlewares and closures compose the route.
+   *
+   * @param string $routePattern
+   * @param callable|string $handlers
+   * @return self
+   */
+  public function options(string $routePattern, ...$handlers)
   {
+    $this->addMap("OPTIONS", $routePattern, $handlers);
     return $this;
   }
 
-  public function patch()
+    /**
+   * Maps a route to a handler that only matches if the HTTP method is PATCH.
+   *
+   * Maps a route to a handler that only matches if the Http method is PATCH.
+   * All handlers added to the $handlers variadic parameter are considered
+   * middlewares to be executed during the route handle cycle, with a final
+   * string being assumed to be the Controller method to invoke as the route
+   * handler proper. If only middlewares or closures are provided, the
+   * middlewares and closures compose the route.
+   *
+   * @param string $routePattern
+   * @param callable|string $handlers
+   * @return self
+   */
+  public function patch(string $routePattern, ...$handlers)
   {
+    $this->addMap("PATCH", $routePattern, $handlers);
     return $this;
   }
 
-  public function post()
+    /**
+   * Maps a route to a handler that only matches if the HTTP method is POST.
+   *
+   * Maps a route to a handler that only matches if the Http method is POST.
+   * All handlers added to the $handlers variadic parameter are considered
+   * middlewares to be executed during the route handle cycle, with a final
+   * string being assumed to be the Controller method to invoke as the route
+   * handler proper. If only middlewares or closures are provided, the
+   * middlewares and closures compose the route.
+   *
+   * @param string $routePattern
+   * @param callable|string $handlers
+   * @return self
+   */
+  public function post(string $routePattern, ...$handlers)
   {
+    $this->addMap("POST", $routePattern, $handlers);
     return $this;
   }
 
-  public function put()
+    /**
+   * Maps a route to a handler that only matches if the HTTP method is PUT.
+   *
+   * Maps a route to a handler that only matches if the Http method is PUT.
+   * All handlers added to the $handlers variadic parameter are considered
+   * middlewares to be executed during the route handle cycle, with a final
+   * string being assumed to be the Controller method to invoke as the route
+   * handler proper. If only middlewares or closures are provided, the
+   * middlewares and closures compose the route.
+   *
+   * @param string $routePattern
+   * @param callable|string $handlers
+   * @return self
+   */
+  public function put(string $routePattern, ...$handlers)
   {
+    $this->addMap("PUT", $routePattern, $handlers);
     return $this;
   }
 
   /**
    * Sets the main handler of the collection.
    *
-   * @param mixed $handler
+   * @param callable|string $handler
    * @param boolean $isLazy
    * @return self
    */
-  public function setHandler(mixed $handler, bool $isLazy = false): self
+  public function setHandler($handler, bool $isLazy = false): self
   {
     $this->handler = $handler;
-    $this->lazy = $lazy;
+    $this->lazy = $isLazy;
 
     return $this;
   }
@@ -228,7 +317,7 @@ class Collection implements CollectionInterface
    */
   public function setLazy(bool $isLazy): self
   {
-    $this->lazy = lazy;
+    $this->isLazy = $isLazy;
     return $this;
   }
 
@@ -240,27 +329,36 @@ class Collection implements CollectionInterface
    */
   public function setPrefix(string $prefix): self
   {
-    $this->prefix = prefix;
+    $this->prefix = $prefix;
     return $this;
   }
 
   /**
    * Internal function to add a handler to the group.
    *
-   * Internal function to add a handler to the group using PSR-compliant
-   * HTTP stack.
+   * Internal function to add a handler to the group using
+   * a PSR-15 HTTP stack.
    *
-   * @param string $method
+   * @param string|null $method
    * @param string $routePattern
    * @param mixed $handlers
    * @return void
    */
   protected function addMap(
-    string $method,
+    $method,
     string $routePattern,
-    mixed ...$handlers
-  )
+    array $handlers
+  ): void
   {
-
+    if (is_null($method)) {
+      $this->handlers->put($routePattern, $handlers);
+    } elseif (!$this->handlers->hasKey($method)) {
+      $methodMap = new Map();
+      $methodMap->put($routePattern, $handlers);
+      $this->handlers->put($method, $methodMap);
+    } else {
+      $methodMap = $this->handlers->get($method);
+      $methodMap->push($routePattern, $handlers);
+    }
   }
 }

@@ -14,3 +14,5 @@ composer.lock
 
 tools/
 build/
+
+.vscode
