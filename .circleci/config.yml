@@ -1,0 +1,23 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: alpine
+    working_directory: ~/phinch
+    steps:
+      - run: apk update
+      - run: apk add php7 php7-fpm php7-phalcon php7-pear php7-dom php7-xml php7-xmlwriter php7-tokenizer git composer
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "composer.json" }}
+            - v1-dependencies-
+
+      - run: composer install -n
+
+      - save_cache:
+          key: composer-v1-{{ checksum "composer.lock" }}
+          paths:
+            - vendor
+      - run: ./vendor/bin/phpunit

@@ -32,7 +32,7 @@
     "php": "^7.3"
   },
   "require-dev": {
-
+    "phpunit/phpunit": "^9.3@dev"
   },
   "suggest": {
     "ext-ds": "Speed up use of php-ds with the native extension"
@@ -44,6 +44,6 @@
   },
   "minimum-stability": "dev",
   "scripts": {
-    "test": "./tools/phpunit --testsuite phinch"
+    "test": "./vendor/bin/phpunit --testsuite phinch"
   }
 }
